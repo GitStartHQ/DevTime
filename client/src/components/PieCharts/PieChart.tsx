@@ -1,12 +1,10 @@
-import React from 'react';
-
 import _ from 'lodash';
-import moment from 'moment';
 import { VictoryContainer, VictoryPie } from 'victory';
 import { convertDate } from '../../constants';
 import { PieLabel } from './PieLabel';
 import { colorProp } from '../charts.utils';
 import { useChartThemeState } from '../../routes/ChartThemeProvider';
+import { formatDurationInternal } from '../../utils';
 
 const sumApp = (p, c) => {
     return _.extend(p, {
@@ -21,7 +19,7 @@ export const PieChart = ({ items, taskName, width }) => {
 
     const pieData = _(items)
         .groupBy(groupByField)
-        .map(b => {
+        .map((b) => {
             return b.reduce(sumApp, {
                 app: b[0].app,
                 title: b[0].title,
@@ -50,12 +48,9 @@ export const PieChart = ({ items, taskName, width }) => {
             containerComponent={<VictoryContainer responsive={false} />}
             style={style}
             labels={({ datum }) => {
-                const dur = moment.duration(datum.timeDiffInMs);
-                const formattedDuration = dur.format();
-
-                return `${datum[groupByField]} [${formattedDuration}]`;
+                return `${datum[groupByField]} [${formatDurationInternal(datum.timeDiffInMs)}]`;
             }}
-            labelComponent={<PieLabel width={width} theme={chartTheme} />}
+            labelComponent={<PieLabel width={width} theme={chartTheme} innerWidth={0} />}
             x="app"
             y="timeDiffInMs"
             data={pieData}

@@ -1,20 +1,16 @@
 import moment from 'moment';
-import React, { createContext, useState, useCallback, useEffect } from 'react';
+import { createContext, useState, useCallback, useEffect } from 'react';
 import { findAllDayItemsForEveryTrack } from './services/trackItem.api';
-import {
-    summariseLog,
-    summariseOnline,
-    summariseTimeOnline,
-} from './components/SummaryCalendar/SummaryCalendar.util';
+import { summariseLog, summariseOnline, summariseTimeOnline } from './components/SummaryCalendar/SummaryCalendar.util';
 import { Logger } from './logger';
-import { MODE_MONTH } from './SummaryContext.util';
+import { CALENDAR_MODE } from './SummaryContext.util';
 
 export const SummaryContext = createContext<any>({});
 
 export const SummaryProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState<any>(false);
     const [selectedDate, setSelectedDate] = useState<any>(moment());
-    const [selectedMode, setSelectedMode] = useState<any>(MODE_MONTH);
+    const [selectedMode, setSelectedMode] = useState<CALENDAR_MODE>(CALENDAR_MODE.MONTH);
 
     const [logSummary, setLogSummary] = useState<any>([]);
     const [onlineSummary, setOnlineSummary] = useState<any>([]);
@@ -24,16 +20,14 @@ export const SummaryProvider = ({ children }) => {
         setIsLoading(true);
         try {
             // TODO, query month +1 day for sleep time
-            const beginDate = moment(selectedDate).startOf(selectedMode);
-            const endDate = moment(selectedDate).endOf(selectedMode);
+            const beginDate = moment.utc(selectedDate).startOf(selectedMode);
+            const endDate = moment.utc(selectedDate).endOf(selectedMode);
 
-            if (selectedMode === MODE_MONTH) {
+            if (selectedMode === CALENDAR_MODE.MONTH) {
                 endDate.add(1, 'day');
             }
-            const { statusItems, logItems } = await findAllDayItemsForEveryTrack(
-                beginDate,
-                endDate,
-            );
+
+            const { statusItems, logItems } = await findAllDayItemsForEveryTrack(beginDate, endDate);
             setLogSummary(summariseLog(logItems, selectedMode));
             setOnlineSummary(summariseOnline(statusItems, selectedMode));
             setOnlineTimesSummary(summariseTimeOnline(statusItems, selectedMode, beginDate));
